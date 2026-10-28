@@ -1,0 +1,17 @@
+# Environnement virtuel (reconstructible avec uv.lock)
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Django : données locales et fichiers téléversés
+db.sqlite3
+media/
+
+# Secrets
+.env
+
+# Éditeurs et système
+.vscode/
+.idea/
