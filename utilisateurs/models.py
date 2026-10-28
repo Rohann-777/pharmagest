@@ -1,3 +1,8 @@
-from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-# Create your models here.
+
+class Utilisateur(AbstractUser):
+    """Utilisateur de PharmaGest.
+
+    Les rôles (caissier, pharmacien...) sont gérés par les groupes Django.
+    """
