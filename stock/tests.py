@@ -67,3 +67,12 @@ class EnregistrerMouvementTests(TestCase):
         lot = self.creer_lot()
         with self.assertRaises(StockError):
             enregistrer_mouvement(lot=lot, type_mouvement=Type.CORRECTION, quantite=0, auteur=self.auteur)
+
+    def test_correction_negative_acceptee_sur_lot_perime(self):
+        lot = self.creer_lot(jours=-1, quantite=20)
+        self.assertTrue(lot.est_perime)
+        mouvement = enregistrer_mouvement(lot=lot, type_mouvement=Type.CORRECTION, quantite=-5, auteur=self.auteur)
+        lot.refresh_from_db()
+        self.assertEqual(lot.quantite_disponible, 15)
+        self.assertEqual(mouvement.quantite, -5)
+        self.assertEqual(lot.mouvements.count(), 1)
