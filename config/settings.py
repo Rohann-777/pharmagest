@@ -144,3 +144,10 @@ LOGIN_REDIRECT_URL = "tableau_de_bord"
 LOGOUT_REDIRECT_URL = "login"
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Informations imprimées sur les documents PDF
+PHARMACIE = {
+    "nom": os.environ.get("PHARMACIE_NOM", "Pharmacie de démonstration"),
+    "adresse": os.environ.get("PHARMACIE_ADRESSE", "Adresse à compléter, Antananarivo"),
+    "telephone": os.environ.get("PHARMACIE_TELEPHONE", "à compléter"),
+}

@@ -44,6 +44,9 @@ class Vente(models.Model):
 
     class Meta:
         ordering = ["-date"]
+        permissions = [
+            ("voir_statistiques", "Peut consulter les statistiques et le rapport des ventes"),
+        ]
 
     def __str__(self):
         return self.numero

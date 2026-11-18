@@ -19,14 +19,24 @@
       <a class="rail-lien {% if request.resolver_match.url_name == 'tableau_de_bord' %}actif{% endif %}"
          {% if request.resolver_match.url_name == 'tableau_de_bord' %}aria-current="page"{% endif %}
          href="{% url 'tableau_de_bord' %}">Tableau de bord</a>
+      {% if perms.ventes.add_vente %}
       <a class="rail-lien {% if request.resolver_match.url_name == 'caisse' %}actif{% endif %}"
          {% if request.resolver_match.url_name == 'caisse' %}aria-current="page"{% endif %}
          href="{% url 'caisse' %}">Caisse</a>
-         {% if perms.catalogue.view_medicament %}
+      {% endif %}
+      {% if perms.catalogue.view_medicament %}
       <a class="rail-lien {% if 'medicament' in request.resolver_match.url_name %}actif{% endif %}"
+         {% if 'medicament' in request.resolver_match.url_name %}aria-current="page"{% endif %}
          href="{% url 'medicament_liste' %}">Médicaments</a>
       {% endif %}
-      {% if user.is_staff %}<a class="rail-lien" href="{% url 'admin:index' %}">Gestion des données</a>{% endif %}
+      {% if perms.ventes.voir_statistiques %}
+      <a class="rail-lien {% if request.resolver_match.url_name == 'rapport_ventes' %}actif{% endif %}"
+         {% if request.resolver_match.url_name == 'rapport_ventes' %}aria-current="page"{% endif %}
+         href="{% url 'rapport_ventes' %}">Rapport des ventes</a>
+      {% endif %}
+      {% if user.is_staff %}
+      <a class="rail-lien" href="{% url 'admin:index' %}">Gestion des données</a>
+      {% endif %}
     </nav>
     <div class="rail-pied">
       <span class="nom">{{ user.get_full_name|default:user.get_username }}</span>

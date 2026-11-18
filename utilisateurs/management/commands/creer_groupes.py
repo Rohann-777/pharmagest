@@ -36,7 +36,11 @@ ROLES = {
         "ventes": {"vente": ["view"], "lignevente": ["view"], "client": ["view"]},
     },
 }
-
+# Permissions personnalisées, déclarées dans Meta.permissions des modèles.
+SPECIALES = {
+    "Pharmacien responsable": [("ventes", "voir_statistiques")],
+    "Responsable de gestion": [("ventes", "voir_statistiques")],
+}
 
 class Command(BaseCommand):
     help = "Crée ou met à jour les groupes d'utilisateurs et leurs permissions."
@@ -55,6 +59,10 @@ class Command(BaseCommand):
                 for application, modeles in droits.items()
                 for modele, actions in modeles.items()
                 for action in actions
+            ]
+            permissions += [
+                Permission.objects.get(content_type__app_label=application, codename=code)
+                for application, code in SPECIALES.get(nom_groupe, [])
             ]
             groupe.permissions.set(permissions)
             self.stdout.write(self.style.SUCCESS(f"{nom_groupe} : {len(permissions)} permission(s)"))

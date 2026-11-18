@@ -28,6 +28,7 @@ git clone https://github.com/Rohann-777/pharmagest.git
 cd pharmagest
 uv sync
 copy .env.example .env
+Renseigner aussi PHARMACIE_NOM, PHARMACIE_ADRESSE et PHARMACIE_TELEPHONE, imprimés sur les documents PDF.
 ```
 
 Dans `.env`, remplace `SECRET_KEY` par une clé générée :
@@ -82,13 +83,19 @@ uv run python manage.py test
 commandes, réceptions), `ventes/` (caisse, ventes, reçu PDF), `rapports/` (tableau de bord),
 `utilisateurs/` (utilisateur personnalisé, groupes), `templates/`, `static/`.
 
+## Documentation
+
+- [Guide d'utilisation](docs/guide-utilisation.md)
+- [Dossier de conception : MCD, MLD, diagrammes UML](docs/conception.md)
+
 ## Limites connues
 
 Ce projet est une première version. Ne sont pas réalisés :
 
 - Retours et annulations de vente (le modèle `RetourVente` n'existe pas encore).
 - Table `JournalAudit` dédiée : la traçabilité repose sur l'auteur et la date des mouvements, ventes et réceptions.
-- Rapports PDF autres que le reçu de vente (bon de commande, rapports de stock, de ventes, d'achats).
+- Factures, bons de réception et rapport des achats en PDF (sont disponibles : reçu, bon de commande, rapport de stock, liste des péremptions, rapport des ventes).
+- Tableau de bord sans sélection de période ni classement des produits les plus vendus.
 - Écrans dédiés pour les fournisseurs et les commandes : via l’admin Django.
 - Réinitialisation de mot de passe par e-mail ; le mot de passe se change via l'admin.
 - Sélection d'un client à la caisse (le modèle `Client` existe) ; paiement mobile money saisi manuellement, sans vérification automatique.

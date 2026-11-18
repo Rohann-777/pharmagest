@@ -45,7 +45,7 @@ class FournisseurAdmin(admin.ModelAdmin):
 
 @admin.register(CommandeAchat)
 class CommandeAchatAdmin(admin.ModelAdmin):
-    list_display = ("numero", "fournisseur", "statut", "montant_total", "date_creation", "lien_reception")
+    list_display = ("numero", "fournisseur", "statut", "montant_total", "date_creation", "lien_reception", "lien_bon")
     list_filter = ("statut", "fournisseur")
     exclude = ("cree_par",)
     readonly_fields = ("statut", "date_commande")
@@ -66,6 +66,12 @@ class CommandeAchatAdmin(admin.ModelAdmin):
         if obj.statut in (Statut.COMMANDEE, Statut.PARTIELLE):
             return format_html('<a href="{}">Réceptionner</a>', reverse("reception", args=[obj.pk]))
         return "-"
+
+    @admin.display(description="Bon de commande")
+    def lien_bon(self, obj):
+        return format_html(
+            '<a href="{}" target="_blank" rel="noopener">PDF</a>', reverse("bon_commande_pdf", args=[obj.pk])
+        )
 
     @admin.action(description="Valider les commandes sélectionnées", permissions=["change"])
     def valider(self, request, queryset):

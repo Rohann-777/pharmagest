@@ -196,15 +196,21 @@ a { color: var(--primaire); }
 
 /* Connexion */
 .accueil { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.accueil-marque { background: var(--rail); color: #fff; padding: 3rem; display: flex;
-                  flex-direction: column; justify-content: flex-end; }
+.accueil-marque {
+  background:
+    linear-gradient(to top, rgba(10, 63, 62, 0.96) 0%, rgba(10, 63, 62, 0.7) 40%, rgba(10, 63, 62, 0.25) 100%),
+    url("../images/connexion.jpg") center 30% / cover no-repeat,
+    var(--rail);
+  color: #fff; padding: 3rem; display: flex;
+  flex-direction: column; justify-content: flex-end;
+}
 .accueil-marque h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 700; letter-spacing: -0.03em; margin: 0 0 0.5rem; }
 .accueil-marque p { color: #B9D7D4; max-width: 32ch; margin: 0; }
 .accueil-form { display: flex; align-items: center; justify-content: center; padding: 2rem; }
 .accueil-form form { width: 100%; max-width: 22rem; }
 @media (max-width: 820px) {
   .accueil { grid-template-columns: 1fr; }
-  .accueil-marque { padding: 2rem; justify-content: flex-start; }
+  .accueil-marque { padding: 2rem; justify-content: flex-end; min-height: 14rem; }
 }
 
 .champ { transition: border-color 0.15s; }
@@ -228,3 +234,80 @@ a { color: var(--primaire); }
 .aide { display: block; color: var(--encre-douce); margin-top: 0.25rem; }
 .erreur { display: block; color: var(--rouge); font-weight: 600; margin-top: 0.25rem; }
 @media (max-width: 700px) { .grille-formulaire { grid-template-columns: 1fr; } }
+a.bouton { text-decoration: none; }
+/* Rapport des ventes */
+/* Sans min-width: 0, une colonne de grille s'élargit pour contenir le graphique défilant. */
+.scene { min-width: 0; }
+
+:root {
+  --donnee: #008C82;
+  --donnee-survol: #006B63;
+  --grille: #E3EAE9;
+}
+
+.segments { display: inline-flex; flex-wrap: wrap; border: 1px solid #9FB3B1; border-radius: var(--rayon);
+            overflow: hidden; margin: 0; padding: 0; background: #fff; }
+.segments input { position: absolute; opacity: 0; width: 0; height: 0; }
+.segments label { padding: 0.5rem 0.85rem; cursor: pointer; font-weight: 500; border-right: 1px solid var(--trait);
+                  transition: background 0.15s; }
+.segments label:last-of-type { border-right: 0; }
+.segments label:hover { background: #F6FAF9; }
+.segments input:checked + label { background: var(--primaire-pale); color: var(--primaire-fonce); font-weight: 700; }
+.segments input:focus-visible + label { outline: 3px solid var(--primaire); outline-offset: -3px; }
+.filtres-date { display: flex; align-items: center; gap: 0.4rem; }
+.filtres .filtres-date .champ { width: auto; flex: none; }
+
+.indicateurs-ventes { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); margin-bottom: 0.5rem; }
+.indicateur-vente { padding: 1.1rem 1.25rem; border-right: 1px solid var(--trait); }
+.indicateur-vente:last-child { border-right: 0; }
+.indicateur-vente .libelle { display: block; color: var(--encre-douce); }
+.indicateur-vente strong { display: block; font-size: 1.6rem; font-weight: 700; line-height: 1.2; margin-top: 0.2rem; }
+.indicateur-vente.principal strong { font-size: clamp(2rem, 3.5vw, 2.6rem); letter-spacing: -0.02em; }
+.note { color: var(--encre-douce); font-size: 0.85rem; margin: 0 0 1.5rem; max-width: 80ch; }
+
+.graphique { margin: 0 0 1.25rem; }
+.graphique-zone { position: relative; padding: 0.75rem 1rem 0.25rem; overflow-x: auto; }
+.graphique-svg { width: 100%; min-width: 560px; height: auto; display: block; overflow: visible; }
+.graphique-svg .grille { stroke: var(--grille); stroke-width: 1; }
+.graphique-svg .ligne-base { stroke: #B9C8C6; stroke-width: 1; }
+.graphique-svg .axe { fill: var(--encre-douce); font-size: 11px; font-variant-numeric: tabular-nums; }
+.graphique-svg .zone { fill: transparent; transition: fill 0.12s; }
+.graphique-svg .barre { fill: var(--donnee); transition: fill 0.12s; }
+.graphique-svg .colonne { outline: none; }
+.graphique-svg .colonne:hover .zone,
+.graphique-svg .colonne:focus-visible .zone { fill: rgba(0, 140, 130, 0.08); }
+.graphique-svg .colonne:hover .barre,
+.graphique-svg .colonne:focus-visible .barre { fill: var(--donnee-survol); }
+
+.bulle { position: absolute; top: 0.25rem; transform: translateX(-50%); z-index: 2; pointer-events: none;
+         display: flex; flex-direction: column; white-space: nowrap; font-size: 0.85rem;
+         background: var(--encre); color: #fff; padding: 0.45rem 0.7rem; border-radius: 6px;
+         box-shadow: 0 8px 18px -10px rgba(18, 41, 43, 0.6); }
+.bulle[hidden] { display: none; }
+.bulle-valeur { font-size: 1rem; }
+.bulle-jour, .bulle-ventes { color: #C9DCDA; }
+
+.tableau-valeurs { border-top: 1px solid var(--trait); }
+.tableau-valeurs summary { padding: 0.75rem 1.1rem; cursor: pointer; color: var(--primaire); font-weight: 500; }
+
+.rang { display: grid; grid-template-columns: minmax(6rem, 10rem) minmax(0, 1fr) auto; gap: 0.75rem;
+        align-items: center; padding: 0.55rem 1.1rem; }
+.rang:first-of-type { padding-top: 0.9rem; }
+.rang:last-child { padding-bottom: 1rem; }
+.rang-nom { overflow-wrap: anywhere; }
+.rang-piste { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.rang-barre { flex: none; height: 12px; min-width: 3px; width: calc((100% - 7.5rem) * var(--proportion));
+              background: var(--donnee); border-radius: 0 4px 4px 0; }
+.rang-valeur { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rang-detail { color: var(--encre-douce); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 820px) {
+  .panneau-titre { flex-wrap: wrap; }
+  .indicateurs-ventes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .indicateur-vente { padding: 0.9rem 1rem; }
+  .indicateur-vente strong { font-size: 1.15rem; }
+  .indicateur-vente.principal { grid-column: 1 / -1; border-right: 0; border-bottom: 1px solid var(--trait); }
+  .indicateur-vente.principal strong { font-size: 2rem; }
+  .rang { grid-template-columns: minmax(0, 1fr) auto; }
+  .rang-nom { grid-column: 1 / -1; }
+}

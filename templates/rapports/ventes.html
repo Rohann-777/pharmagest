@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block titre %}Rapport des ventes - PharmaGest{% endblock %}
+{% block contenu %}
+<header class="entete">
+  <h1>Rapport des ventes</h1>
+  <p>Du {{ periode.debut|date:"j F Y" }} au {{ periode.fin|date:"j F Y" }}</p>
+</header>
+
+{% if periode.erreur %}
+  <div class="message message-error" role="alert">{{ periode.erreur }} La période des 30 derniers jours est affichée.</div>
+{% endif %}
+
+{# Une seule rangée de filtres, au-dessus de tout ce qu'elle filtre. #}
+<form method="get" class="panneau filtres" id="filtres">
+  <fieldset class="segments">
+    <legend class="visually-hidden">Période</legend>
+    {% for cle, libelle in presets %}
+      <input type="radio" name="periode" value="{{ cle }}" id="periode-{{ cle }}" {% if periode.cle == cle %}checked{% endif %}>
+      <label for="periode-{{ cle }}">{{ libelle }}</label>
+    {% endfor %}
+    <input type="radio" name="periode" value="perso" id="periode-perso" {% if periode.cle == 'perso' %}checked{% endif %}>
+    <label for="periode-perso">Personnalisée</label>
+  </fieldset>
+  <label class="filtres-date">Du <input type="date" name="du" class="champ" value="{{ periode.debut|date:'Y-m-d' }}"></label>
+  <label class="filtres-date">Au <input type="date" name="au" class="champ" value="{{ periode.fin|date:'Y-m-d' }}"></label>
+  <button type="submit" class="bouton bouton-primaire">Afficher</button>
+  <a class="bouton bouton-contour" href="{% url 'rapport_ventes_pdf' %}?{{ requete_pdf }}" target="_blank" rel="noopener">Exporter en PDF</a>
+</form>
+
+<section class="panneau indicateurs-ventes" aria-label="Indicateurs de la période">
+  <div class="indicateur-vente principal">
+    <span class="libelle">Chiffre d'affaires</span>
+    <strong>{{ ca }}</strong>
+  </div>
+  <div class="indicateur-vente">
+    <span class="libelle">Ventes</span>
+    <strong>{{ stats.nb_ventes }}</strong>
+  </div>
+  <div class="indicateur-vente">
+    <span class="libelle">Panier moyen</span>
+    <strong>{{ panier_moyen }}</strong>
+  </div>
+  <div class="indicateur-vente">
+    <span class="libelle">Unités vendues</span>
+    <strong>{{ stats.unites }}</strong>
+  </div>
+</section>
+<p class="note">Ventes validées, aux prix appliqués le jour de la vente. Le paiement étant encaissé à la vente, ce montant correspond aussi aux encaissements. Ce n'est pas un bénéfice.</p>
+
+<figure class="panneau graphique">
+  <figcaption class="panneau-titre">Chiffre d'affaires par jour <span>en ariary, survolez une colonne pour le détail</span></figcaption>
+  <div class="graphique-zone" id="graphique-jours">
+    <svg viewBox="0 0 {{ graphique.largeur }} {{ graphique.hauteur }}" class="graphique-svg"
+         role="group" aria-label="Chiffre d'affaires par jour, du {{ periode.debut|date:'j F' }} au {{ periode.fin|date:'j F Y' }}">
+      {% for g in graphique.graduations %}
+        <line class="grille" x1="{{ graphique.gauche }}" x2="{{ graphique.droite }}" y1="{{ g.y }}" y2="{{ g.y }}"></line>
+        <text class="axe" x="{{ graphique.gauche_texte }}" y="{{ g.y }}" text-anchor="end" dominant-baseline="middle">{{ g.libelle }}</text>
+      {% endfor %}
+      {% for c in graphique.colonnes %}
+        <g class="colonne" tabindex="0"
+           data-valeur="{{ c.ca_texte }}" data-jour="{{ c.jour|date:'l j F' }}" data-ventes="{{ c.nb }} vente{{ c.nb|pluralize }}"
+           aria-label="{{ c.jour|date:'j F' }} : {{ c.ca_texte }}, {{ c.nb }} vente{{ c.nb|pluralize }}">
+          <rect class="zone" x="{{ c.case_x }}" y="{{ graphique.haut }}" width="{{ c.case_largeur }}" height="{{ graphique.hauteur_trace }}"></rect>
+          {% if c.chemin %}<path class="barre" d="{{ c.chemin }}"></path>{% endif %}
+        </g>
+        {% if c.etiquette %}
+          <text class="axe" x="{{ c.etiquette_x }}" y="{{ graphique.etiquette_y }}" text-anchor="middle">{{ c.etiquette }}</text>
+        {% endif %}
+      {% endfor %}
+      <line class="ligne-base" x1="{{ graphique.gauche }}" x2="{{ graphique.droite }}" y1="{{ graphique.base }}" y2="{{ graphique.base }}"></line>
+    </svg>
+    <div class="bulle" id="bulle" hidden>
+      <strong class="bulle-valeur"></strong>
+      <span class="bulle-jour"></span>
+      <span class="bulle-ventes"></span>
+    </div>
+  </div>
+  <details class="tableau-valeurs">
+    <summary>Voir les valeurs sous forme de tableau</summary>
+    <div class="defile">
+      <table class="table-simple">
+        <thead><tr><th>Jour</th><th class="num">Ventes</th><th class="num">Chiffre d'affaires</th></tr></thead>
+        <tbody>
+        {% for c in graphique.colonnes %}
+          <tr><td>{{ c.jour|date:"l j F Y" }}</td><td class="num">{{ c.nb }}</td><td class="num">{{ c.ca_texte }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</figure>
+
+<div class="deux">
+  <section class="panneau">
+    <div class="panneau-titre">Produits les plus vendus <span>classés par chiffre d'affaires</span></div>
+    {% for p in top_produits %}
+      <div class="rang">
+        <span class="rang-nom">{{ p.nom }}</span>
+        <span class="rang-piste"><span class="rang-barre" style="--proportion: {{ p.proportion }}"></span><span class="rang-valeur">{{ p.ca_texte }}</span></span>
+        <span class="rang-detail">{{ p.unites }} unité{{ p.unites|pluralize }}</span>
+      </div>
+    {% empty %}
+      <p class="vide">Aucune vente sur cette période.</p>
+    {% endfor %}
+  </section>
+
+  <section class="panneau">
+    <div class="panneau-titre">Modes de paiement <span>part du chiffre d'affaires</span></div>
+    {% for m in par_mode %}
+      <div class="rang">
+        <span class="rang-nom">{{ m.nom }}</span>
+        <span class="rang-piste"><span class="rang-barre" style="--proportion: {{ m.proportion }}"></span><span class="rang-valeur">{{ m.ca_texte }}</span></span>
+        <span class="rang-detail">{{ m.part }}</span>
+      </div>
+    {% empty %}
+      <p class="vide">Aucune vente sur cette période.</p>
+    {% endfor %}
+  </section>
+</div>
+
+<script>
+  // Choisir une date bascule sur « Personnalisée » ; choisir un raccourci recharge la page.
+  const filtres = document.getElementById("filtres");
+  filtres.querySelectorAll("input[type=date]").forEach((champ) => {
+    champ.addEventListener("change", () => { document.getElementById("periode-perso").checked = true; });
+  });
+  filtres.querySelectorAll("input[name=periode]:not(#periode-perso)").forEach((choix) => {
+    choix.addEventListener("change", () => filtres.submit());
+  });
+
+  // Bulle d'information : même contenu au survol de la souris et au focus clavier.
+  const zone = document.getElementById("graphique-jours");
+  const bulle = document.getElementById("bulle");
+  function montrer(colonne) {
+    bulle.querySelector(".bulle-valeur").textContent = colonne.dataset.valeur;
+    bulle.querySelector(".bulle-jour").textContent = colonne.dataset.jour;
+    bulle.querySelector(".bulle-ventes").textContent = colonne.dataset.ventes;
+    bulle.hidden = false;
+    // Sur téléphone, le graphique défile horizontalement : on tient compte du défilement.
+    const cadre = zone.getBoundingClientRect();
+    const cible = colonne.getBoundingClientRect();
+    const centre = cible.left - cadre.left + zone.scrollLeft + cible.width / 2;
+    const demi = bulle.offsetWidth / 2;
+    bulle.style.left = Math.min(Math.max(centre, demi), zone.scrollWidth - demi) + "px";
+  }
+  zone.querySelectorAll(".colonne").forEach((colonne) => {
+    colonne.addEventListener("pointerenter", () => montrer(colonne));
+    colonne.addEventListener("focus", () => montrer(colonne));
+    colonne.addEventListener("pointerleave", () => { bulle.hidden = true; });
+    colonne.addEventListener("blur", () => { bulle.hidden = true; });
+  });
+</script>
+{% endblock %}

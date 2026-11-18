@@ -6,6 +6,8 @@ from reportlab.lib.pagesizes import A5
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from django.conf import settings
+from django.utils.html import escape
 
 
 def formater_ar(montant):
@@ -23,7 +25,11 @@ def generer_recu(vente):
     caissier = vente.caissier.get_full_name() or vente.caissier.get_username()
 
     elements = [
-        Paragraph("PharmaGest", styles["Title"]),
+        Paragraph(escape(settings.PHARMACIE["nom"]), styles["Title"]),
+        Paragraph(
+            f"{escape(settings.PHARMACIE['adresse'])} - Tél. {escape(settings.PHARMACIE['telephone'])}",
+            styles["Normal"],
+        ),
         Paragraph(f"Reçu n° {vente.numero}", styles["Heading2"]),
         Paragraph(f"Date : {timezone.localtime(vente.date):%d/%m/%Y %H:%M}", styles["Normal"]),
         Paragraph(f"Caissier : {caissier}", styles["Normal"]),

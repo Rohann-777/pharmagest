@@ -6,6 +6,13 @@
   <p>{% now "l j F Y" %}</p>
 </header>
 
+{% if perms.stock.view_lotstock %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="bouton bouton-contour" href="{% url 'rapport_stock_pdf' %}" target="_blank" rel="noopener">Rapport de stock (PDF)</a>
+  <a class="bouton bouton-contour" href="{% url 'peremptions_pdf' %}" target="_blank" rel="noopener">Péremptions sous 30 jours (PDF)</a>
+</div>
+{% endif %}
+
 <section class="panneau situation" aria-label="Situation du jour">
   <div class="situation-principal">
     <div class="libelle">Ventes du jour</div>
