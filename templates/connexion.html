@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titre %}Connexion - PharmaGest{% endblock %}
+{% block corps %}
+<div class="accueil">
+  <div class="accueil-marque">
+    <h1>PharmaGest</h1>
+    <p>La caisse, le stock et les achats de la pharmacie, au même endroit.</p>
+  </div>
+  <div class="accueil-form">
+    <form method="post">
+      {% csrf_token %}
+      <h2 class="h4 mb-4">Se connecter</h2>
+      {% if form.errors %}
+        <div class="message message-error" role="alert">Identifiant ou mot de passe incorrect. Vérifiez votre saisie et réessayez.</div>
+      {% endif %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="mb-3">
+        <label class="etiquette" for="id_username">Identifiant</label>
+        <input type="text" name="username" id="id_username" class="champ" autofocus required autocomplete="username">
+      </div>
+      <div class="mb-4">
+        <label class="etiquette" for="id_password">Mot de passe</label>
+        <input type="password" name="password" id="id_password" class="champ" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="bouton bouton-primaire bouton-large">Se connecter</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

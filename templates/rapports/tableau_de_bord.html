@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block titre %}Tableau de bord - PharmaGest{% endblock %}
+{% block contenu %}
+<header class="entete">
+  <h1>Tableau de bord</h1>
+  <p>{% now "l j F Y" %}</p>
+</header>
+
+<section class="panneau situation" aria-label="Situation du jour">
+  <div class="situation-principal">
+    <div class="libelle">Ventes du jour</div>
+    <div class="montant">{{ chiffre_affaires|floatformat:"0g" }}<span class="unite">Ar</span></div>
+    <div class="libelle">Nombre de ventes : {{ nb_ventes }}</div>
+  </div>
+  <div class="indicateurs">
+    <div class="indicateur"><strong>{{ nb_medicaments }}</strong>Médicaments actifs</div>
+    <div class="indicateur indicateur-ambre"><strong>{{ stocks_faibles|length }}</strong>Sous le seuil d'alerte</div>
+    <div class="indicateur indicateur-ambre"><strong>{{ lots_proches|length }}</strong>Péremption sous 30 jours</div>
+    <div class="indicateur indicateur-rouge"><strong>{{ lots_perimes|length }}</strong>Lots périmés en stock</div>
+  </div>
+</section>
+
+<div class="deux">
+  <section class="panneau">
+    <div class="panneau-titre">À réapprovisionner <span>stock délivrable sous le seuil</span></div>
+    <div class="defile">
+      <table class="table-simple">
+        <thead><tr><th>Médicament</th><th class="num">Stock</th><th class="num">Seuil</th></tr></thead>
+        <tbody>
+        {% for m in stocks_faibles %}
+          <tr>
+            <td>{{ m }}</td>
+            <td class="num">{% if m.stock == 0 %}<span class="pastille pastille-rouge">Rupture</span>{% else %}<span class="pastille pastille-ambre">{{ m.stock }}</span>{% endif %}</td>
+            <td class="num">{{ m.seuil_alerte }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3" class="vide">Tous les stocks sont au-dessus de leur seuil.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panneau">
+    <div class="panneau-titre">Péremptions <span>périmés et échéances sous 30 jours</span></div>
+    <div class="defile">
+      <table class="table-simple">
+        <thead><tr><th>Médicament</th><th>Lot</th><th>Échéance</th><th class="num">Qté</th></tr></thead>
+        <tbody>
+        {% for lot in lots_perimes %}
+          <tr>
+            <td>{{ lot.medicament }}</td><td>{{ lot.numero_lot }}</td>
+            <td>{{ lot.date_peremption|date:"d/m/Y" }} <span class="pastille pastille-rouge">Périmé</span></td>
+            <td class="num">{{ lot.quantite_disponible }}</td>
+          </tr>
+        {% endfor %}
+        {% for lot in lots_proches %}
+          <tr>
+            <td>{{ lot.medicament }}</td><td>{{ lot.numero_lot }}</td>
+            <td>{{ lot.date_peremption|date:"d/m/Y" }} <span class="pastille pastille-ambre">dans {{ lot.date_peremption|timeuntil }}</span></td>
+            <td class="num">{{ lot.quantite_disponible }}</td>
+          </tr>
+        {% endfor %}
+        {% if not lots_perimes and not lots_proches %}
+          <tr><td colspan="4" class="vide">Aucun lot périmé ni proche de l'échéance.</td></tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

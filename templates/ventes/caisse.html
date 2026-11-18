@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block titre %}Caisse - PharmaGest{% endblock %}
+{% block contenu %}
+<header class="entete">
+  <h1>Caisse</h1>
+  <p>Vendeur : {{ request.user.get_username }}</p>
+</header>
+
+<div class="caisse">
+  <section class="panneau">
+    <form method="get" class="recherche" role="search">
+      <label for="q" class="visually-hidden">Rechercher un médicament</label>
+      <input id="q" type="search" name="q" value="{{ q }}" class="champ" autofocus autocomplete="off"
+             onfocus="this.select()" placeholder="Nom, principe actif ou code-barres">
+      <button class="bouton bouton-primaire">Chercher</button>
+    </form>
+
+    {% if q %}
+      {% for m in resultats %}
+      <form method="post" action="{% url 'caisse_ajouter' %}" class="resultat">
+        {% csrf_token %}
+        <input type="hidden" name="medicament" value="{{ m.pk }}">
+        <input type="hidden" name="q" value="{{ q }}">
+        <div>
+          <div class="resultat-nom">{{ m }}</div>
+          <div class="resultat-info">
+            <span class="chiffres">{{ m.prix_vente|floatformat:"0g" }} Ar</span>
+            {% if m.stock == 0 %}<span class="pastille pastille-rouge">Rupture</span>
+            {% elif m.stock <= m.seuil_alerte %}<span class="pastille pastille-ambre">Stock bas : {{ m.stock }}</span>
+            {% else %}<span class="pastille pastille-vert">{{ m.stock }} en stock</span>{% endif %}
+          </div>
+        </div>
+        <div class="resultat-action">
+          <input type="number" name="quantite" value="1" min="1" max="{{ m.stock }}" inputmode="numeric"
+                 class="champ" aria-label="Quantité de {{ m }}">
+          <button class="bouton bouton-contour" {% if m.stock == 0 %}disabled{% endif %}>Ajouter</button>
+        </div>
+      </form>
+      {% empty %}
+        <p class="vide">Aucun médicament ne correspond à « {{ q }} ». Vérifiez l'orthographe ou essayez le code-barres.</p>
+      {% endfor %}
+    {% else %}
+      <p class="vide">Tapez un nom, un principe actif, ou scannez un code-barres pour trouver un médicament.</p>
+    {% endif %}
+  </section>
+
+  <div>
+    {% if derniere_vente %}
+    <div class="derniere-vente">
+      <strong>Dernière vente : {{ derniere_vente.numero }}</strong>, {{ derniere_vente.total|floatformat:"0g" }} Ar<br>
+      <a href="{% url 'recu_pdf' derniere_vente.pk %}" target="_blank" rel="noopener">Ouvrir le reçu PDF</a>
+    </div>
+    {% endif %}
+
+    <section class="ticket" aria-label="Ticket en cours">
+      <div class="ticket-tete"><strong>Ticket en cours</strong><span>{% now "d/m/Y H:i" %}</span></div>
+      {% if lignes %}
+        {% for l in lignes %}
+        <div class="ticket-ligne">
+          <div>{{ l.medicament }}</div>
+          <div class="montant">{{ l.sous_total|floatformat:"0g" }}</div>
+          <div class="detail">{{ l.quantite }} x {{ l.medicament.prix_vente|floatformat:"0g" }}</div>
+          <form method="post" action="{% url 'caisse_retirer' l.medicament.pk %}" class="text-end">
+            {% csrf_token %}
+            <input type="hidden" name="q" value="{{ q }}">
+            <button class="bouton bouton-discret" aria-label="Retirer {{ l.medicament }} du ticket">Retirer</button>
+          </form>
+        </div>
+        {% endfor %}
+        <div class="ticket-total"><span>Total</span><span class="chiffres">{{ total|floatformat:"0g" }} Ar</span></div>
+        <form method="post" action="{% url 'caisse_valider' %}" class="ticket-bas" id="form-validation">
+          {% csrf_token %}
+          <input type="hidden" name="jeton" value="{{ jeton }}">
+          <fieldset class="modes">
+            <legend>Mode de paiement</legend>
+            <div class="modes-choix">
+              {% for valeur, libelle in modes_paiement %}
+              <div>
+                <input type="radio" name="mode_paiement" id="mode-{{ valeur }}" value="{{ valeur }}" {% if forloop.first %}checked{% endif %}>
+                <label for="mode-{{ valeur }}">{{ libelle }}</label>
+              </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+          <button type="submit" class="bouton bouton-primaire bouton-large">Valider la vente</button>
+        </form>
+      {% else %}
+        <p class="ticket-vide">Le ticket est vide. Cherchez un médicament, indiquez la quantité, puis ajoutez-le.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+
+<script>
+  const formulaireVente = document.getElementById("form-validation");
+  if (formulaireVente) {
+    formulaireVente.addEventListener("submit", () => {
+      const bouton = formulaireVente.querySelector("button[type=submit]");
+      bouton.disabled = true;
+      bouton.textContent = "Enregistrement en cours";
+    });
+  }
+</script>
+{% endblock %}
