@@ -5,10 +5,10 @@ from django.utils import timezone
 from catalogue.models import Medicament
 
 
-def medicaments_avec_stock():
-    """Médicaments actifs, annotés de leur stock délivrable (lots valides, non bloqués)."""
+def annoter_stock(medicaments):
+    """Ajoute à chaque médicament son stock délivrable (lots valides, non bloqués)."""
     aujourdhui = timezone.localdate()
-    return Medicament.objects.filter(statut=Medicament.Statut.ACTIF).annotate(
+    return medicaments.annotate(
         stock=Coalesce(
             Sum(
                 "lots__quantite_disponible",
@@ -17,3 +17,8 @@ def medicaments_avec_stock():
             0,
         )
     )
+
+
+def medicaments_avec_stock():
+    """Médicaments actifs avec leur stock délivrable (utilisé par la caisse et le tableau de bord)."""
+    return annoter_stock(Medicament.objects.filter(statut=Medicament.Statut.ACTIF))

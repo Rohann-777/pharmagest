@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block titre %}Médicaments - PharmaGest{% endblock %}
+{% block contenu %}
+<header class="entete">
+  <h1>{% if archives %}Médicaments archivés{% else %}Médicaments{% endif %}</h1>
+  {% if perms.catalogue.add_medicament %}
+    <a class="bouton bouton-primaire" href="{% url 'medicament_creation' %}">Ajouter un médicament</a>
+  {% endif %}
+</header>
+
+<form method="get" class="panneau filtres" role="search">
+  <input type="search" name="q" value="{{ q }}" class="champ"
+         placeholder="Nom, principe actif ou code-barres" aria-label="Rechercher un médicament">
+  <select name="categorie" class="champ" aria-label="Catégorie">
+    <option value="">Toutes les catégories</option>
+    {% for c in categories %}
+      <option value="{{ c.pk }}" {% if categorie == c.pk|stringformat:"d" %}selected{% endif %}>{{ c.nom }}</option>
+    {% endfor %}
+  </select>
+  <label class="filtres-case">
+    <input type="checkbox" name="archives" value="1" {% if archives %}checked{% endif %}> Afficher les archivés
+  </label>
+  <button class="bouton bouton-contour">Filtrer</button>
+</form>
+
+<section class="panneau">
+  <div class="defile">
+    <table class="table-simple">
+      <thead>
+        <tr><th>Photo</th><th>Médicament</th><th>Catégorie</th><th class="num">Prix de vente</th><th class="num">Stock</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for m in medicaments %}
+        <tr>
+          <td>
+            {% if m.photo %}
+              <img class="vignette" src="{{ m.photo.url }}" alt="Photo de {{ m }}" loading="lazy">
+            {% else %}
+              <span class="vignette vignette-vide" aria-hidden="true">{{ m.nom_commercial|slice:":2" }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <strong>{{ m }}</strong>
+            {% if m.denomination_generique %}<br><small class="text-muted">{{ m.denomination_generique }}</small>{% endif %}
+          </td>
+          <td>{{ m.categorie }}</td>
+          <td class="num">{{ m.prix_vente|floatformat:"0g" }} Ar</td>
+          <td class="num">
+            {% if m.stock == 0 %}<span class="pastille pastille-rouge">Rupture</span>
+            {% elif m.stock <= m.seuil_alerte %}<span class="pastille pastille-ambre">{{ m.stock }}</span>
+            {% else %}{{ m.stock }}{% endif %}
+          </td>
+          <td class="actions">
+            {% if perms.catalogue.change_medicament %}
+              <a href="{% url 'medicament_modification' m.pk %}">Modifier</a>
+              <a href="{% url 'medicament_archivage' m.pk %}">{% if archives %}Réactiver{% else %}Archiver{% endif %}</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="vide">Aucun médicament ne correspond à ces critères.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if is_paginated %}
+<nav class="pagination-simple" aria-label="Pages de la liste">
+  {% if page_obj.has_previous %}
+    <a href="?{% if filtres %}{{ filtres }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Page précédente</a>
+  {% endif %}
+  <span>Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a href="?{% if filtres %}{{ filtres }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Page suivante</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

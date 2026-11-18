@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titre %}{% if object %}Modifier {{ object }}{% else %}Ajouter un médicament{% endif %} - PharmaGest{% endblock %}
+{% block contenu %}
+<header class="entete">
+  <h1>{% if object %}Modifier {{ object }}{% else %}Ajouter un médicament{% endif %}</h1>
+</header>
+
+<form method="post" enctype="multipart/form-data" class="panneau panneau-corps" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    <div class="message message-error" role="alert">{{ form.non_field_errors|join:" " }}</div>
+  {% endif %}
+  <div class="grille-formulaire">
+    {% for champ in form %}
+      <div class="{% if champ.name == 'photo' %}pleine-largeur{% endif %}">
+        <label class="etiquette" for="{{ champ.id_for_label }}">{{ champ.label }}{% if champ.field.required %} *{% endif %}</label>
+        {% if champ.name == 'photo' and object.photo %}
+          <img class="apercu-photo" src="{{ object.photo.url }}" alt="Photo actuelle de {{ object }}">
+        {% endif %}
+        {{ champ }}
+        {% if champ.help_text %}<small class="aide">{{ champ.help_text }}</small>{% endif %}
+        {% for erreur in champ.errors %}<small class="erreur">{{ erreur }}</small>{% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="d-flex flex-wrap gap-3 align-items-center mt-4">
+    <button type="submit" class="bouton bouton-primaire">
+      {% if object %}Enregistrer les modifications{% else %}Ajouter au catalogue{% endif %}
+    </button>
+    <a href="{% url 'medicament_liste' %}">Annuler</a>
+  </div>
+</form>
+{% endblock %}

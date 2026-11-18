@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titre %}Confirmation - PharmaGest{% endblock %}
+{% block contenu %}
+<header class="entete">
+  <h1>{% if medicament.statut == 'actif' %}Archiver{% else %}Réactiver{% endif %} {{ medicament }} ?</h1>
+</header>
+
+<form method="post" class="panneau panneau-corps">
+  {% csrf_token %}
+  {% if medicament.statut == 'actif' %}
+    <p>Le médicament ne sera plus proposé à la caisse. Ses lots, achats et ventes restent dans l'historique, et vous pourrez le réactiver à tout moment.</p>
+    <button type="submit" class="bouton bouton-primaire">Archiver</button>
+  {% else %}
+    <p>Le médicament sera de nouveau proposé à la caisse.</p>
+    <button type="submit" class="bouton bouton-primaire">Réactiver</button>
+  {% endif %}
+  <a class="ms-3" href="{% url 'medicament_liste' %}">Annuler</a>
+</form>
+{% endblock %}

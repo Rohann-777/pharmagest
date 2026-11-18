@@ -22,6 +22,10 @@
       <a class="rail-lien {% if request.resolver_match.url_name == 'caisse' %}actif{% endif %}"
          {% if request.resolver_match.url_name == 'caisse' %}aria-current="page"{% endif %}
          href="{% url 'caisse' %}">Caisse</a>
+         {% if perms.catalogue.view_medicament %}
+      <a class="rail-lien {% if 'medicament' in request.resolver_match.url_name %}actif{% endif %}"
+         href="{% url 'medicament_liste' %}">Médicaments</a>
+      {% endif %}
       {% if user.is_staff %}<a class="rail-lien" href="{% url 'admin:index' %}">Gestion des données</a>{% endif %}
     </nav>
     <div class="rail-pied">

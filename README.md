@@ -89,7 +89,7 @@ Ce projet est une première version. Ne sont pas réalisés :
 - Retours et annulations de vente (le modèle `RetourVente` n'existe pas encore).
 - Table `JournalAudit` dédiée : la traçabilité repose sur l'auteur et la date des mouvements, ventes et réceptions.
 - Rapports PDF autres que le reçu de vente (bon de commande, rapports de stock, de ventes, d'achats).
-- Écrans dédiés pour le catalogue, les fournisseurs et les commandes : ces données se gèrent via l'admin Django.
+- Écrans dédiés pour les fournisseurs et les commandes : via l’admin Django.
 - Réinitialisation de mot de passe par e-mail ; le mot de passe se change via l'admin.
 - Sélection d'un client à la caisse (le modèle `Client` existe) ; paiement mobile money saisi manuellement, sans vérification automatique.
 - Sauvegarde automatisée : à faire par copie de la base ou `pg_dump` en production.
