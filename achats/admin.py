@@ -1,12 +1,31 @@
 from django.contrib import admin
 
-from .models import CommandeAchat, Fournisseur, LigneAchat
+from .models import CommandeAchat, Fournisseur, LigneAchat, LigneReception, ReceptionAchat
 
 
 class LigneAchatInline(admin.TabularInline):
     model = LigneAchat
     extra = 1
 
+class LigneReceptionInline(admin.TabularInline):
+    model = LigneReception
+    extra = 0
+    can_delete = False
+    readonly_fields = ("ligne_achat", "lot", "quantite_recue")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+@admin.register(ReceptionAchat)
+class ReceptionAchatAdmin(admin.ModelAdmin):
+    list_display = ("numero", "commande", "recu_par", "date")
+    inlines = [LigneReceptionInline]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 @admin.register(Fournisseur)
 class FournisseurAdmin(admin.ModelAdmin):
