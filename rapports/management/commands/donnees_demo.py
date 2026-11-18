@@ -29,7 +29,7 @@ class Command(BaseCommand):
         if Medicament.objects.exists():
             raise CommandError("La base contient déjà des médicaments : utilisez une base vide.")
 
-        call_command("creer_groupes", verbosity=0)
+        call_command("creer_groupes", verbosity=options["verbosity"])
         aujourdhui = timezone.localdate()
 
         def dans(jours):
@@ -148,7 +148,8 @@ class Command(BaseCommand):
                 jeton=uuid.uuid4(),
             )
 
-        self.stdout.write(self.style.SUCCESS("Données de démonstration créées."))
-        self.stdout.write(f"Comptes (mot de passe : {MOT_DE_PASSE}) :")
-        for identifiant, groupe, _ in comptes:
-            self.stdout.write(f"  {identifiant}  ({groupe})")
+        if options["verbosity"]:
+            self.stdout.write(self.style.SUCCESS("Données de démonstration créées."))
+            self.stdout.write(f"Comptes (mot de passe : {MOT_DE_PASSE}) :")
+            for identifiant, groupe, _ in comptes:
+                self.stdout.write(f"  {identifiant}  ({groupe})")

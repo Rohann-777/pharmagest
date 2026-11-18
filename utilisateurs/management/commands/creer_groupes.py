@@ -48,7 +48,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         administrateur, _ = Group.objects.get_or_create(name="Administrateur")
         administrateur.permissions.set(Permission.objects.all())
-        self.stdout.write(self.style.SUCCESS("Administrateur : toutes les permissions"))
+        if options["verbosity"]:
+            self.stdout.write(self.style.SUCCESS("Administrateur : toutes les permissions"))
 
         for nom_groupe, droits in ROLES.items():
             groupe, _ = Group.objects.get_or_create(name=nom_groupe)
@@ -65,4 +66,5 @@ class Command(BaseCommand):
                 for application, code in SPECIALES.get(nom_groupe, [])
             ]
             groupe.permissions.set(permissions)
-            self.stdout.write(self.style.SUCCESS(f"{nom_groupe} : {len(permissions)} permission(s)"))
+            if options["verbosity"]:
+                self.stdout.write(self.style.SUCCESS(f"{nom_groupe} : {len(permissions)} permission(s)"))
