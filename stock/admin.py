@@ -8,6 +8,16 @@ class LotStockAdmin(admin.ModelAdmin):
     list_display = ("medicament", "numero_lot", "date_peremption", "quantite_disponible", "bloque")
     list_filter = ("bloque", "date_peremption")
     search_fields = ("numero_lot", "medicament__nom_commercial")
+    # Seul le blocage se modifie à la main : les quantités ne bougent que par les mouvements.
+    readonly_fields = (
+        "medicament", "numero_lot", "date_peremption", "quantite_recue", "quantite_disponible",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(MouvementStock)
@@ -19,7 +29,7 @@ class MouvementStockAdmin(admin.ModelAdmin):
         return False
 
     def has_change_permission(self, request, obj=None):
-        return False   
+        return False
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return False  # un journal ne se réécrit pas (RG09)

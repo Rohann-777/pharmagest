@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titre %}Réception {{ commande.numero }} - PharmaGest{% endblock %}
+{% block contenu %}
+<header class="entete">
+  <h1>Réception de {{ commande.numero }}</h1>
+  <p>{{ commande.fournisseur }}</p>
+</header>
+
+{% if lignes %}
+<form method="post" class="panneau">
+  {% csrf_token %}
+  <div class="defile">
+    <table class="table-simple">
+      <thead>
+        <tr><th>Médicament</th><th class="num">Reste à recevoir</th><th>N° de lot</th><th>Péremption</th><th>Quantité reçue</th></tr>
+      </thead>
+      <tbody>
+      {% for l in lignes %}
+        <tr>
+          <td>{{ l.medicament }}</td>
+          <td class="num">{{ l.quantite_restante }}</td>
+          <td><input class="champ" name="lot_{{ l.pk }}" value="{{ l.val_lot }}" aria-label="Numéro de lot de {{ l.medicament }}"></td>
+          <td><input class="champ" type="date" name="peremption_{{ l.pk }}" value="{{ l.val_peremption }}" aria-label="Date de péremption de {{ l.medicament }}"></td>
+          <td><input class="champ" type="number" min="0" max="{{ l.quantite_restante }}" name="quantite_{{ l.pk }}" value="{{ l.val_quantite }}" aria-label="Quantité reçue de {{ l.medicament }}"></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panneau-corps d-flex flex-wrap align-items-center gap-3">
+    <button type="submit" class="bouton bouton-primaire">Enregistrer la réception</button>
+    <a href="{% url 'admin:achats_commandeachat_changelist' %}">Retour aux commandes</a>
+    <span class="text-muted">Laissez la quantité vide pour une ligne non livrée.</span>
+  </div>
+</form>
+{% else %}
+<div class="panneau"><p class="vide">Cette commande n'a plus rien à recevoir.</p></div>
+{% endif %}
+{% endblock %}

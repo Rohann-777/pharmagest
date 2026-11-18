@@ -13,5 +13,6 @@ urlpatterns = [
     ),
     path("deconnexion/", auth_views.LogoutView.as_view(), name="logout"),
     path("caisse/", include("ventes.urls")),
+        path("achats/", include("achats.urls")),
     path("", include("rapports.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
